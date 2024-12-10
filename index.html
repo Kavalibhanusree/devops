@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Version Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .version-list {
+            margin-top: 20px;
+        }
+        .version {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .version:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Version Control</h1>
+    <textarea id="editor" placeholder="Write something here..."></textarea><br>
+    <button onclick="saveVersion()">Save Version</button>
+    <button onclick="clearAllVersions()">Clear All Versions</button>
+
+    <div class="version-list">
+        <h3>Saved Versions:</h3>
+        <div id="version-container"></div>
+    </div>
+
+    <script>
+        // Load versions from localStorage
+        function loadVersions() {
+            const versions = JSON.parse(localStorage.getItem('versions')) || [];
+            const versionContainer = document.getElementById('version-container');
+            versionContainer.innerHTML = '';
+
+            versions.forEach((version, index) => {
+                const versionElement = document.createElement('div');
+                versionElement.classList.add('version');
+                versionElement.innerHTML = `<strong>Version ${index + 1}</strong><br>Saved at: ${version.timestamp}`;
+                versionElement.onclick = () => revertToVersion(index);
+                versionContainer.appendChild(versionElement);
+            });
+        }
+
+        // Save the current content as a new version
+        function saveVersion() {
+            const editorContent = document.getElementById('editor').value;
+            if (editorContent.trim() === '') {
+                alert('Please write something before saving a version.');
+                return;
+            }
+
+            const versions = JSON.parse(localStorage.getItem('versions')) || [];
+            const timestamp = new Date().toLocaleString();
+            const newVersion = { content: editorContent, timestamp: timestamp };
+
+            versions.push(newVersion);
+            localStorage.setItem('versions', JSON.stringify(versions));
+
+            alert('Version saved!');
+            loadVersions(); // Reload versions list
+        }
+
+        // Revert the editor content to a specific version
+        function revertToVersion(index) {
+            const versions = JSON.parse(localStorage.getItem('versions')) || [];
+            const versionToRevert = versions[index];
+            document.getElementById('editor').value = versionToRevert.content;
+        }
+
+        // Clear all saved versions
+        function clearAllVersions() {
+            if (confirm('Are you sure you want to clear all versions?')) {
+                localStorage.removeItem('versions');
+                loadVersions(); // Reload version list
+                alert('All versions have been cleared.');
+            }
+        }
+
+        // Initialize the page by loading existing versions
+        loadVersions();
+    </script>
+</body>
+</html>
